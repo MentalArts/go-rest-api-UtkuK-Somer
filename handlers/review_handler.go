@@ -30,10 +30,11 @@ func CreateReview(c *gin.Context) {
 
 // Bir Kitaba Ait Tüm İncelemeleri Listeleme
 func GetReviewsByBook(c *gin.Context) {
-	bookID := c.Param("id")
+	bookID := c.Param("id") // Kitabın ID'sini al
+
 	var reviews []models.Review
 
-	if err := db.Where("book_id = ?", bookID).Find(&reviews).Error; err != nil {
+	if err := db.Preload("Book").Preload("Book.Author").Where("book_id = ?", bookID).Find(&reviews).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -35,7 +35,7 @@ func CreateAuthor(c *gin.Context) {
 func GetAllAuthors(c *gin.Context) {
 	var authors []models.Author
 
-	if err := db.Find(&authors).Error; err != nil {
+	if err := db.Preload("Books").Find(&authors).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -45,10 +45,9 @@ func GetAllAuthors(c *gin.Context) {
 
 func GetAuthor(c *gin.Context) {
 	id := c.Param("id")
-
 	var author models.Author
 
-	if err := db.First(&author, id).Error; err != nil {
+	if err := db.Preload("Books").First(&author, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "author not found"})
 		return
 	}
