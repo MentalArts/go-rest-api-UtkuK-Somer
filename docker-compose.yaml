@@ -1,19 +1,47 @@
+version: "3.8"
+
 services:
     db:
+        container_name: mentalarts-db
         image: postgres:latest
-        env_file: .env
+        restart: unless-stopped
         ports:
             - "5432:5432"
         environment:
-            POSTGRES_PASSWORD: ${PG_PASSWORD}
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: 123abcd
+            POSTGRES_DB: mentalarts_db
         volumes:
             - pgdata:/var/lib/postgresql/data
         networks:
-            - db_network
+            - app_network
+        healthcheck:
+            test: ["CMD", "pg_isready", "-U", "postgres"]
+            interval: 10s
+            retries: 5
+            timeout: 5s
+
+    app:
+        container_name: mentalarts-api
+        build: .
+        restart: unless-stopped
+        ports:
+            - "8000:8000"
+        depends_on:
+            db:
+                condition: service_healthy  # PostgreSQL tamamen hazır olmadan başlamaz
+        environment:
+            DB_HOST: db
+            DB_USER: postgres
+            DB_PASSWORD: 123abcd
+            DB_NAME: mentalarts_db
+            DB_PORT: 5432
+        networks:
+            - app_network
 
 volumes:
     pgdata:
 
 networks:
-    db_network:
+    app_network:
         driver: bridge

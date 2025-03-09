@@ -1,53 +1,71 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"mentalartsapi/handlers"
 	"mentalartsapi/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func main() {
+func waitForDB(dsn string, retries int, delay time.Duration) (*gorm.DB, error) {
+	var db *gorm.DB
+	var err error
 
-	dsn := "host=localhost user=postgres password=123abcd dbname=postgres port=5432 sslmode=disable"
+	for i := 0; i < retries; i++ {
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err == nil {
+			fmt.Println("✅ PostgreSQL bağlantısı başarılı!")
+			return db, nil
+		}
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatalf("Could not connect database: %v", err)
+		fmt.Printf("❌ PostgreSQL bağlantısı başarısız! %d saniye sonra tekrar denenecek...\n", delay/time.Second)
+		time.Sleep(delay)
 	}
 
-	db.AutoMigrate(&models.Author{})
+	return nil, fmt.Errorf("PostgreSQL bağlantısı başarısız: %v", err)
+}
+
+func main() {
+	dsn := "host=db user=postgres password=123abcd dbname=mentalarts_db port=5432 sslmode=disable"
+
+	db, err := waitForDB(dsn, 5, 5*time.Second)
+	if err != nil {
+		log.Fatalf("Veritabanına bağlanılamadı: %v", err)
+	}
+
+	db.AutoMigrate(&models.Author{}, &models.Book{}, &models.Review{})
 
 	handlers.InitDB(db)
 
 	router := gin.Default()
 
-	router.GET("/ping", handlers.HandlePing)
-	router.GET("/hello", handlers.HandleHello)
-	router.GET("/helloWithPayload", handlers.HandleHelloWithPayload)
+	// 📌 Tüm API endpoint'lerini /api/v1 ile düzenleyelim
+	api := router.Group("/api/v1")
 
-	router.POST("/author", handlers.CreateAuthor)
-	router.GET("/author", handlers.GetAllAuthors)
-	router.GET("/author/:id", handlers.GetAuthor)
-	router.PUT("/author/:id", handlers.UpdateAuthor)
-	router.DELETE("/author/:id", handlers.DeleteAuthor)
+	// 🟢 Author Routes
+	api.POST("/authors", handlers.CreateAuthor)
+	api.GET("/authors", handlers.GetAllAuthors)
+	api.GET("/authors/:id", handlers.GetAuthor)
+	api.PUT("/authors/:id", handlers.UpdateAuthor)
+	api.DELETE("/authors/:id", handlers.DeleteAuthor)
+
+	// 🟢 Book Routes
+	api.POST("/books", handlers.CreateBook)
+	api.GET("/books", handlers.GetAllBooks)
+	api.GET("/books/:id", handlers.GetBook)
+	api.PUT("/books/:id", handlers.UpdateBook)
+	api.DELETE("/books/:id", handlers.DeleteBook)
+
+	// 🟢 Review Routes
+	api.POST("/books/:id/reviews", handlers.CreateReview)
+	api.GET("/books/:id/reviews", handlers.GetReviewsByBook)
+	api.PUT("/reviews/:id", handlers.UpdateReview)
+	api.DELETE("/reviews/:id", handlers.DeleteReview)
 
 	router.Run(":8000")
 }
-
-// Vanilla implementation
-// func main() {
-// 	http.HandleFunc("GET /ping", handlePing)
-// 	log.Println("Server listening...")
-// 	log.Fatal(http.ListenAndServe(":8000", nil))
-// }
-
-// func handlePing(w http.ResponseWriter, r *http.Request) {
-// 	res := Response{Msg: "pong"}
-// 	json.NewEncoder(w).Encode(res)
-// 	w.WriteHeader(http.StatusOK)
-// 	log.Println("Request recieved")
-// }

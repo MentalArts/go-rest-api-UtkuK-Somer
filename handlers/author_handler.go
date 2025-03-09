@@ -25,12 +25,11 @@ func CreateAuthor(c *gin.Context) {
 
 	result := db.Create(&author)
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
 		return
 	}
 
 	c.JSON(http.StatusCreated, author)
-
 }
 
 func GetAllAuthors(c *gin.Context) {

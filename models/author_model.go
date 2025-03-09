@@ -1,9 +1,15 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Author struct {
 	gorm.Model
-	Name  string `json:"name"`
-	Email string `json:"email" gorm:"unique"`
+	Name      string    `json:"name"`
+	Biography string    `json:"biography"`
+	BirthDate time.Time `json:"birth_date"`
+	Books     []Book    `json:"books" gorm:"foreignKey:AuthorID"`
 }
