@@ -11,5 +11,5 @@ type Author struct {
 	Name      string    `json:"name"`
 	Biography string    `json:"biography"`
 	BirthDate time.Time `json:"birth_date"`
-	Books     []Book    `json:"books,omitempty" gorm:"foreignKey:AuthorID"`
+	Books     []Book    `json:"books,omitempty" gorm:"foreignKey:AuthorID;constraint:OnDelete:CASCADE;"`
 }

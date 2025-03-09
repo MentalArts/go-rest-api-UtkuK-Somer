@@ -12,5 +12,5 @@ type Review struct {
 	Comment    string    `json:"comment"`     // Kullanıcı yorumu
 	DatePosted time.Time `json:"date_posted"` // İnceleme tarihi
 	BookID     uint      `json:"book_id"`     // Foreign Key
-	Book       Book      `json:"book" gorm:"foreignKey:BookID"`
+	Book       Book      `json:"book" gorm:"foreignKey:BookID;constraint:OnDelete:CASCADE;"`
 }
