@@ -19,11 +19,11 @@ func waitForDB(dsn string, retries int, delay time.Duration) (*gorm.DB, error) {
 	for i := 0; i < retries; i++ {
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if err == nil {
-			fmt.Println("✅ PostgreSQL bağlantısı başarılı!")
+			fmt.Println("PostgreSQL bağlantısı başarılı!")
 			return db, nil
 		}
 
-		fmt.Printf("❌ PostgreSQL bağlantısı başarısız! %d saniye sonra tekrar denenecek...\n", delay/time.Second)
+		fmt.Printf("PostgreSQL bağlantısı başarısız! %d saniye sonra tekrar denenecek...\n", delay/time.Second)
 		time.Sleep(delay)
 	}
 
@@ -44,24 +44,23 @@ func main() {
 
 	router := gin.Default()
 
-	// 📌 Tüm API endpoint'lerini /api/v1 ile düzenleyelim
 	api := router.Group("/api/v1")
 
-	// 🟢 Author Routes
+	// Authpr
 	api.POST("/authors", handlers.CreateAuthor)
 	api.GET("/authors", handlers.GetAllAuthors)
 	api.GET("/authors/:id", handlers.GetAuthor)
 	api.PUT("/authors/:id", handlers.UpdateAuthor)
 	api.DELETE("/authors/:id", handlers.DeleteAuthor)
 
-	// 🟢 Book Routes
+	//  Book
 	api.POST("/books", handlers.CreateBook)
 	api.GET("/books", handlers.GetAllBooks)
 	api.GET("/books/:id", handlers.GetBook)
 	api.PUT("/books/:id", handlers.UpdateBook)
 	api.DELETE("/books/:id", handlers.DeleteBook)
 
-	// 🟢 Review Routes
+	//  Review
 	api.POST("/books/:id/reviews", handlers.CreateReview)
 	api.GET("/books/:id/reviews", handlers.GetReviewsByBook)
 	api.PUT("/reviews/:id", handlers.UpdateReview)

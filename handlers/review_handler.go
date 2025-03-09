@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Yeni Review ekleme
 func CreateReview(c *gin.Context) {
 	var review models.Review
 
@@ -17,7 +16,7 @@ func CreateReview(c *gin.Context) {
 		return
 	}
 
-	review.DatePosted = time.Now() // Tarihi otomatik ayarla
+	review.DatePosted = time.Now()
 
 	result := db.Create(&review)
 	if result.Error != nil {
@@ -28,7 +27,6 @@ func CreateReview(c *gin.Context) {
 	c.JSON(http.StatusCreated, review)
 }
 
-// Bir Kitaba Ait Tüm İncelemeleri Listeleme
 func GetReviewsByBook(c *gin.Context) {
 	bookID := c.Param("id") // Kitabın ID'sini al
 
@@ -42,7 +40,6 @@ func GetReviewsByBook(c *gin.Context) {
 	c.JSON(http.StatusOK, reviews)
 }
 
-// Belirli Bir İncelemeyi Güncelleme
 func UpdateReview(c *gin.Context) {
 	id := c.Param("id")
 	var review models.Review
@@ -65,7 +62,6 @@ func UpdateReview(c *gin.Context) {
 	c.JSON(http.StatusOK, review)
 }
 
-// İncelemeyi Silme
 func DeleteReview(c *gin.Context) {
 	id := c.Param("id")
 	var review models.Review
